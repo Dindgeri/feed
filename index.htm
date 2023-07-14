@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,6 +80,7 @@
     }
   </style>
 </head>
+
 <body>
   <h1>Remote Job Search</h1>
   <form id="search-form">
@@ -101,57 +103,54 @@
     });
 
     async function fetchJobs(searchQuery) {
-      const apiUrl = 'https://www.arbeitnow.com/api/job-board-api';
+      const apiUrl = `https://remotive.io/api/remote-jobs?search=${searchQuery}`;
       const response = await fetch(apiUrl);
       const data = await response.json();
-      const remoteJobs = data.data.filter(job => job.remote);
+      const remoteJobs = data.jobs;
 
-      if (searchQuery) {
-        const filteredJobs = remoteJobs.filter(job => {
-          const jobTitle = job.title.toLowerCase();
-          return jobTitle.includes(searchQuery.toLowerCase());
-        });
-        displayJobs(filteredJobs);
+      if (remoteJobs.length === 0) {
+        displayNoJobsMessage();
       } else {
         displayJobs(remoteJobs);
       }
     }
 
+    function displayNoJobsMessage() {
+      jobsContainer.innerHTML = '';
+      const noJobsMessage = document.createElement('p');
+      noJobsMessage.classList.add('no-jobs-message');
+      noJobsMessage.textContent = 'No jobs found.';
+      jobsContainer.appendChild(noJobsMessage);
+    }
+
     function displayJobs(jobs) {
       jobsContainer.innerHTML = '';
+      jobs.forEach(job => {
+        const jobContainer = document.createElement('div');
+        jobContainer.classList.add('job-container');
 
-      if (jobs.length === 0) {
-        const noJobsMessage = document.createElement('p');
-        noJobsMessage.classList.add('no-jobs-message');
-        noJobsMessage.textContent = 'No jobs found.';
-        jobsContainer.appendChild(noJobsMessage);
-      } else {
-        jobs.forEach(job => {
-          const jobContainer = document.createElement('div');
-          jobContainer.classList.add('job-container');
+        const jobTitle = document.createElement('h3');
+        jobTitle.textContent = job.title;
 
-          const jobTitle = document.createElement('h3');
-          jobTitle.textContent = job.title;
+        const companyName = document.createElement('p');
+        companyName.textContent = `Company: ${job.company_name}`;
 
-          const companyName = document.createElement('p');
-          companyName.textContent = `Company: ${job.company_name}`;
+        const jobDescription = document.createElement('div');
+        jobDescription.innerHTML = job.description;
 
-          const jobDescription = document.createElement('div');
-          jobDescription.innerHTML = job.description;
+        const jobUrl = document.createElement('a');
+        jobUrl.href = job.url;
+        jobUrl.textContent = 'View Job Details';
 
-          const jobUrl = document.createElement('a');
-          jobUrl.href = job.url;
-          jobUrl.textContent = 'View Job Details';
+        jobContainer.appendChild(jobTitle);
+        jobContainer.appendChild(companyName);
+        jobContainer.appendChild(jobDescription);
+        jobContainer.appendChild(jobUrl);
 
-          jobContainer.appendChild(jobTitle);
-          jobContainer.appendChild(companyName);
-          jobContainer.appendChild(jobDescription);
-          jobContainer.appendChild(jobUrl);
-
-          jobsContainer.appendChild(jobContainer);
-        });
-      }
+        jobsContainer.appendChild(jobContainer);
+      });
     }
   </script>
 </body>
+
 </html>
