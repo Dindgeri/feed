@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remote Job Search</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    input[type="submit"] {
+      padding: 8px 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #jobs {
+      margin-top: 20px;
+    }
+
+    .job-container {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .job-container h3 {
+      margin-top: 0;
+    }
+
+    .job-container p {
+      margin-bottom: 10px;
+    }
+
+    .job-container a {
+      display: inline-block;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    .no-jobs-message {
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Remote Job Search</h1>
+  <form id="search-form">
+    <label for="search-input">Search:</label>
+    <input type="text" id="search-input" name="search" placeholder="Enter a keyword">
+    <input type="submit" value="Search">
+  </form>
+
+  <div id="jobs"></div>
+
+  <script>
+    const form = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const jobsContainer = document.getElementById('jobs');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const searchQuery = searchInput.value;
+      fetchJobs(searchQuery);
+    });
+
+    async function fetchJobs(searchQuery) {
+      const apiUrl = 'https://www.arbeitnow.com/api/job-board-api';
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      const remoteJobs = data.data.filter(job => job.remote);
+
+      if (searchQuery) {
+        const filteredJobs = remoteJobs.filter(job => {
+          const jobTitle = job.title.toLowerCase();
+          return jobTitle.includes(searchQuery.toLowerCase());
+        });
+        displayJobs(filteredJobs);
+      } else {
+        displayJobs(remoteJobs);
+      }
+    }
+
+    function displayJobs(jobs) {
+      jobsContainer.innerHTML = '';
+
+      if (jobs.length === 0) {
+        const noJobsMessage = document.createElement('p');
+        noJobsMessage.classList.add('no-jobs-message');
+        noJobsMessage.textContent = 'No jobs found.';
+        jobsContainer.appendChild(noJobsMessage);
+      } else {
+        jobs.forEach(job => {
+          const jobContainer = document.createElement('div');
+          jobContainer.classList.add('job-container');
+
+          const jobTitle = document.createElement('h3');
+          jobTitle.textContent = job.title;
+
+          const companyName = document.createElement('p');
+          companyName.textContent = `Company: ${job.company_name}`;
+
+          const jobDescription = document.createElement('div');
+          jobDescription.innerHTML = job.description;
+
+          const jobUrl = document.createElement('a');
+          jobUrl.href = job.url;
+          jobUrl.textContent = 'View Job Details';
+
+          jobContainer.appendChild(jobTitle);
+          jobContainer.appendChild(companyName);
+          jobContainer.appendChild(jobDescription);
+          jobContainer.appendChild(jobUrl);
+
+          jobsContainer.appendChild(jobContainer);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
